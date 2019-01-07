@@ -1,0 +1,83 @@
+<!doctype html>
+
+<!--
+
+  scss-scaffold: prototype SCSS in your browser without having to install Node.
+
+  Takes an SCSS file, turns it into CSS, then applies that to an externally-
+  supplied HTML file. Notably, it also works in the `file:///` namespace.
+
+  IMPORTANT: Your HTML file needs to contain this boilerplate:
+    ```
+    <head>
+      <script src='lib/injectcss.js'></script>
+    <head>
+    <body>
+      (content goes here...)
+    </body>
+    ```
+
+-->
+
+<html>
+  <head>
+    <meta charset='UTF-8'>
+
+    <!-- Replace the following config variables with your filenames. -->
+    <script>
+      var scss_src_file = 'style.scss';
+      var html_src_file = 'content.inc';
+    </script>
+
+    <script src='lib/sass.js'></script>
+    <script>
+      var scss = new Sass('lib/sass.worker.js');
+
+      var request = new XMLHttpRequest();
+      request.open('GET', scss_src_file, false);
+      request.send();
+
+      if (request.status === 200 || request.status === 0) {
+        scss.compile(request.responseText, function(r) {
+          if (r.status != 0) {
+            console.log(r);
+            document.body.getElementsByTagName("marquee")[0].innerHTML =
+              "Error :(";
+            return;
+          }
+
+          var obj = document.createElement('object');
+          obj.type = 'text/html';
+          obj.width = '100%';
+          obj.data = html_src_file + '?' + encodeURIComponent(r.text);
+          document.body.removeChild(
+            document.body.getElementsByTagName("marquee")[0]);
+          document.body.appendChild(obj);
+
+          scss.destroy();
+        });
+      }
+
+    </script>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+      object {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+      }
+      marquee {
+        font-size: 50px;
+        font-weight: bold;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <marquee behavior='slide' scrolldelay='6' truespeed scrollamount='1'>Compiling :)</marquee>
+  </body>
+</html>
